@@ -1,3 +1,4 @@
+from django.db import connection
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -27,17 +28,46 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(combined_data)
 
 
-async def get_order(self, order_id, *args, **kwargs):
-    order_instance = await Order.objects.select_related('customer').aget(id=order_id)
+def get_order(self, order_id, *args, **kwargs):
+    with connection.cursor() as cursor:
+        # Get order and related customer information using raw SQL
+        cursor.execute("""
+            SELECT o.id, o.created_at, c.id as customer_id, c.name as customer_name, c.email as customer_email
+            FROM myapp_order o
+            JOIN myapp_customer c ON o.customer_id = c.id
+            WHERE o.id = %s
+        """, [order_id])
+        order_row = cursor.fetchone()
 
-    product_data = []
+        if not order_row:
+            return JsonResponse({'error': 'Order not found'}, status=404)
 
-    async for product in Product.objects.filter(orders__in=[order_id]):
-        product_data.append(ProductSerializer(product).data)
+        order_instance = {
+            'id': order_row[0],
+            'created_at': order_row[1],
+            'customer': {
+                'id': order_row[2],
+                'name': order_row[3],
+                'email': order_row[4]
+            }
+        }
+
+        # Get products related to the order using raw SQL
+        cursor.execute("""
+            SELECT p.id, p.name, p.price
+            FROM myapp_product p
+            JOIN myapp_order_products op ON p.id = op.product_id
+            WHERE op.order_id = %s
+        """, [order_id])
+        product_rows = cursor.fetchall()
+
+        product_data = [
+            {'id': row[0], 'name': row[1], 'price': row[2]} for row in product_rows
+        ]
 
     combined_data = {
-        "order": OrderSerializer(order_instance).data,
-        "products": product_data,
+        'order': order_instance,
+        'products': product_data,
     }
 
     return JsonResponse(combined_data)

@@ -16,7 +16,6 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer()
-    # products = ProductSerializer(many=True)
 
     class Meta:
         model = Order
