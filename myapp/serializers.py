@@ -16,8 +16,8 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer()
-    products = ProductSerializer(many=True)
+    # products = ProductSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = '__all__'
+        fields = ['customer', 'created_at']
