@@ -4,3 +4,6 @@ psycopg2-binary
 aiomultiprocess
 factory-boy
 gunicorn
+asgiref
+databases
+uvicorn
