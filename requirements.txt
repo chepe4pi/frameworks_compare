@@ -3,4 +3,4 @@ djangorestframework
 psycopg2-binary
 aiomultiprocess
 factory-boy
-
+gunicorn
