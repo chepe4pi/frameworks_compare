@@ -1,3 +1,5 @@
+import asyncio
+
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -28,16 +30,25 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 async def get_order(self, order_id, *args, **kwargs):
-    order_instance = await Order.objects.select_related('customer').aget(id=order_id)
 
-    product_data = []
+    async def get_order_instance(order_id):
+        order_instance = await Order.objects.select_related('customer').aget(id=order_id)
+        return order_instance
 
-    async for product in Product.objects.filter(orders__in=[order_id]):
-        product_data.append({
-            "id": product.id,
-            "name": product.name,
-            "price": product.price,
-        })
+    async def get_products(order_id):
+        product_data = []
+        async for product in Product.objects.filter(orders__in=[order_id]):
+            product_data.append({
+                "id": product.id,
+                "name": product.name,
+                "price": product.price,
+            })
+        return product_data
+
+    order_instance, product_data = await asyncio.gather(
+        get_order_instance(order_id),
+        get_products(order_id),
+    )
 
     combined_data = {
         "order": {
