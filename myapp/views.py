@@ -29,15 +29,15 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(combined_data)
 
 
-async def get_order(self, order_id, *args, **kwargs):
+def get_order(self, order_id, *args, **kwargs):
 
-    async def get_order_instance(order_id):
-        order_instance = await Order.objects.select_related('customer').aget(id=order_id)
+    def get_order_instance(order_id):
+        order_instance = Order.objects.select_related('customer').get(id=order_id)
         return order_instance
 
-    async def get_products(order_id):
+    def get_products(order_id):
         product_data = []
-        async for product in Product.objects.filter(orders__in=[order_id]):
+        for product in Product.objects.filter(orders__in=[order_id]):
             product_data.append({
                 "id": product.id,
                 "name": product.name,
@@ -45,10 +45,8 @@ async def get_order(self, order_id, *args, **kwargs):
             })
         return product_data
 
-    order_instance, product_data = await asyncio.gather(
-        get_order_instance(order_id),
-        get_products(order_id),
-    )
+    order_instance = get_order_instance(order_id)
+    product_data = get_products(order_id)
 
     combined_data = {
         "order": {
