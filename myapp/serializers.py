@@ -5,19 +5,18 @@ from .models import Customer, Order, Product
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = ['id', 'name', 'price']
 
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = '__all__'
+        fields = ['id', 'name', 'email']
 
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer()
-    # products = ProductSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = ['customer', 'created_at']
+        fields = ['id', 'customer', 'created_at']
