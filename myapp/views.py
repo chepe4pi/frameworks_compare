@@ -4,5 +4,5 @@ from .serializers import OrderSerializer
 
 
 class OrderViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Order.objects.all()
+    queryset = Order.objects.all().select_related('customer').prefetch_related('products')
     serializer_class = OrderSerializer
