@@ -8,6 +8,6 @@ router = DefaultRouter()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('api/', include(router.urls)),
+    path('api/', include(router.urls)),
     path('api/orders/<int:order_id>/', get_order, name='get_order'),
 ]

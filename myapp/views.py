@@ -33,10 +33,22 @@ async def get_order(self, order_id, *args, **kwargs):
     product_data = []
 
     async for product in Product.objects.filter(orders__in=[order_id]):
-        product_data.append(ProductSerializer(product).data)
+        product_data.append({
+            "id": product.id,
+            "name": product.name,
+            "price": product.price,
+        })
 
     combined_data = {
-        "order": OrderSerializer(order_instance).data,
+        "order": {
+            "id": order_instance.id,
+            "customer": {
+                "id": order_instance.customer.id,
+                "name": order_instance.customer.name,
+                "email": order_instance.customer.email,
+            },
+            "created_at": order_instance.created_at,
+        },
         "products": product_data,
     }
 
