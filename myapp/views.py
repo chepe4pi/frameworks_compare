@@ -13,7 +13,6 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = OrderSerializer
 
     def retrieve(self, request, *args, **kwargs):
-
         order_id = kwargs.get('pk')
         order_instance = self.get_object()
         order_serialized = OrderSerializer(order_instance).data
@@ -30,15 +29,10 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 async def get_order(self, order_id, *args, **kwargs):
-
-    async def get_order_instance(order_id):
-        await asyncio.sleep(5)
-        order_instance = await Order.objects.select_related('customer').aget(id=order_id)
-        return order_instance
+    order_instance = Order.objects.select_related('customer').aget(id=order_id)
 
     async def get_products(order_id):
         product_data = []
-        await asyncio.sleep(4)
         async for product in Product.objects.filter(orders__in=[order_id]):
             product_data.append({
                 "id": product.id,
@@ -49,7 +43,7 @@ async def get_order(self, order_id, *args, **kwargs):
         return product_data
 
     order_instance, product_data = await asyncio.gather(
-        get_order_instance(order_id),
+        order_instance,
         get_products(order_id),
     )
 
